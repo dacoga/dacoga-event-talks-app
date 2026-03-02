@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Talks Today</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f4f7f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        header {
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        header h1 {
+            margin: 0;
+            color: #2c3e50;
+        }
+        .search-container {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        #search-box {
+            width: 50%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 25px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        #search-box:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+        }
+        .schedule-item, .break-item {
+            display: flex;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: #fdfdfd;
+            transition: box-shadow 0.3s ease;
+        }
+        .schedule-item:hover {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        }
+        .time-slot {
+            flex: 0 0 120px;
+            font-weight: bold;
+            color: #3498db;
+            padding-right: 20px;
+            text-align: right;
+        }
+        .break-item .time-slot {
+            color: #e67e22;
+        }
+        .details {
+            flex-grow: 1;
+            border-left: 2px solid #e0e0e0;
+            padding-left: 20px;
+        }
+        .details h2 {
+            margin: 0 0 10px;
+            color: #34495e;
+        }
+        .details .speakers {
+            font-style: italic;
+            color: #555;
+            margin-bottom: 15px;
+        }
+        .details .description {
+            margin-bottom: 15px;
+        }
+        .categories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .category {
+            background-color: #ecf0f1;
+            color: #7f8c8d;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        #no-results {
+            text-align: center;
+            padding: 20px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Tech Talks Today: Event Schedule</h1>
+        </header>
+
+        <main>
+            <div class="search-container">
+                <input type="text" id="search-box" placeholder="Search by category (e.g., AI, Cloud)...">
+            </div>
+
+            <div id="schedule">
+                <!-- Schedule will be dynamically inserted here -->
+            </div>
+            <div id="no-results" style="display: none;">No talks match your search.</div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const talksData = [
+                {
+                    title: "The Future of Artificial Intelligence",
+                    speakers: ["Dr. Evelyn Reed"],
+                    categories: ["AI", "Machine Learning", "Future Tech"],
+                    duration: 60,
+                    description: "A deep dive into the next generation of AI, exploring neural networks, and the ethical implications of a smarter world."
+                },
+                {
+                    title: "Modern Web Development with WebAssembly",
+                    speakers: ["John Smith", "Jane Doe"],
+                    categories: ["Web Dev", "Performance", "JavaScript"],
+                    duration: 60,
+                    description: "Discover how WebAssembly is changing the landscape of web applications, enabling near-native performance in the browser."
+                },
+                {
+                    title: "Scaling Applications in the Cloud",
+                    speakers: ["Emily White"],
+                    categories: ["Cloud", "DevOps", "Scalability"],
+                    duration: 60,
+                    description: "Best practices for designing and deploying scalable, resilient applications using modern cloud infrastructure."
+                },
+                {
+                    title: "Cybersecurity in a Post-Quantum World",
+                    speakers: ["Alex Chen"],
+                    categories: ["Security", "Cryptography", "Future Tech"],
+                    duration: 60,
+                    description: "An overview of the threats quantum computing poses to current encryption standards and the race to develop quantum-resistant cryptography."
+                },
+                {
+                    title: "Building Real-Time Data Pipelines",
+                    speakers: ["Maria Garcia", "Kenji Tanaka"],
+                    categories: ["Data", "Engineering", "Real-Time"],
+                    duration: 60,
+                    description: "Learn how to build, deploy, and manage real-time data pipelines for analytics and machine learning applications."
+                },
+                {
+                    title: "The UX of Developer Tools",
+                    speakers: ["David Lee"],
+                    categories: ["UX", "Developer Experience", "Tools"],
+                    duration: 60,
+                    description: "This talk explores the importance of user experience in developer tooling and how to create tools that developers love to use."
+                }
+            ];
+
+            const scheduleContainer = document.getElementById('schedule');
+            const searchBox = document.getElementById('search-box');
+            const noResults = document.getElementById('no-results');
+
+            function formatTime(date) {
+                return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+            }
+
+            function renderSchedule(talks) {
+                scheduleContainer.innerHTML = '';
+                noResults.style.display = 'none';
+
+                if (talks.length === 0) {
+                    noResults.style.display = 'block';
+                    return;
+                }
+
+                let currentTime = new Date();
+                currentTime.setHours(10, 0, 0, 0); // Event starts at 10:00 AM
+
+                talks.forEach((talk, index) => {
+                    const startTime = new Date(currentTime);
+                    const endTime = new Date(startTime.getTime() + talk.duration * 60000);
+
+                    const scheduleItem = document.createElement('div');
+                    scheduleItem.className = 'schedule-item';
+                    scheduleItem.innerHTML = `
+                        <div class="time-slot">
+                            ${formatTime(startTime)} - ${formatTime(endTime)}
+                        </div>
+                        <div class="details">
+                            <h2>${talk.title}</h2>
+                            <div class="speakers">By: ${talk.speakers.join(', ')}</div>
+                            <div class="description">${talk.description}</div>
+                            <div class="categories">
+                                ${talk.categories.map(cat => `<span class="category">${cat}</span>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                    scheduleContainer.appendChild(scheduleItem);
+
+                    // Set current time for the next talk
+                    currentTime = new Date(endTime.getTime() + 10 * 60000); // 10-minute transition
+
+                    // Add lunch break after the 3rd talk
+                    if (index === 2) {
+                        const lunchStartTime = new Date(currentTime);
+                        const lunchEndTime = new Date(lunchStartTime.getTime() + 60 * 60000); // 1-hour lunch
+                        
+                        const breakItem = document.createElement('div');
+                        breakItem.className = 'break-item';
+                        breakItem.innerHTML = `
+                            <div class="time-slot">
+                                ${formatTime(lunchStartTime)} - ${formatTime(lunchEndTime)}
+                            </div>
+                            <div class="details">
+                                <h2>Lunch Break</h2>
+                            </div>
+                        `;
+                        scheduleContainer.appendChild(breakItem);
+
+                        currentTime = lunchEndTime; // Next talk starts after lunch
+                    }
+                });
+            }
+
+            function filterTalks() {
+                const query = searchBox.value.toLowerCase().trim();
+                if (!query) {
+                    renderSchedule(talksData);
+                    return;
+                }
+
+                const filteredTalks = talksData.filter(talk => 
+                    talk.categories.some(category => category.toLowerCase().includes(query))
+                );
+
+                renderSchedule(filteredTalks);
+            }
+
+            searchBox.addEventListener('input', filterTalks);
+
+            // Initial render
+            renderSchedule(talksData);
+        });
+    </script>
+</body>
+</html>
